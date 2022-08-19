@@ -6,19 +6,21 @@ pipeline {
     environment {
         scannerHome = tool 'SonarQubeScanner'
         dockerImage = ''
+        image = 'jagatvarshney/nagp-devops'
+        username = 'jagatvarshney'
         registryCredential = 'dockercredential'
     }
     stages {
-        stage('Checkout') {
+        stage('Cloning Git') {
             steps {
+                echo "checkout branch: " + env.BRANCH_NAME
                 checkout([$class: 'GitSCM', branches: [[name: '*/'+env.BRANCH_NAME]], extensions: [], userRemoteConfigs: [[url: 'https://github.com/jagat2189/app_jagatvarshney.git']]])
             }
         }
-        stage('Build Docker image') {
+        stage('Building Docker Image') {
             steps {
                 script {
-                    echo "Branch name is "+env.BRANCH_NAME
-                    dockerImage = docker.build 'jagatvarshney/i-jagatvarshney-'+env.BRANCH_NAME
+                    dockerImage = docker.build image
                 }
             }
         }
@@ -42,12 +44,12 @@ pipeline {
                 bat "npm test"
             }
         }
-        stage('Push Image') {
+        stage('Push Image To Registry') {
             steps {
                 script {
                     docker.withRegistry( '', registryCredential ) {
-                        dockerImage.push("$BUILD_NUMBER")
-                        dockerImage.push('latest')
+                        dockerImage.push("i-${username}-${BRANCH_NAME}-${BUILD_NUMBER}")
+                        dockerImage.push("i-${username}-${BRANCH_NAME}-latest")
                     }
                 }
             }
