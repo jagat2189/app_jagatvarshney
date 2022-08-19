@@ -13,7 +13,7 @@ pipeline {
     stages {
         stage('Cloning Git') {
             steps {
-                echo "checkout " + ${BRANCH_NAME}
+                echo "checkout " + env.BRANCH_NAME
                 checkout([$class: 'GitSCM', branches: [[name: '*/'+env.BRANCH_NAME]], extensions: [], userRemoteConfigs: [[url: 'https://github.com/jagat2189/app_jagatvarshney.git']]])
             }
         }
