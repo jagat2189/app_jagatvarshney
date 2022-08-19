@@ -6,7 +6,7 @@ pipeline {
     environment {
         scannerHome = tool 'SonarQubeScanner'
         dockerImage = ''
-        registryCredential = 'dockerhubcredentials'
+        registryCredential = 'dockercredential'
     }
     stages {
         stage('Checkout') {
