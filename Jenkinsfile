@@ -13,14 +13,13 @@ pipeline {
     stages {
         stage('Cloning Git') {
             steps {
-                echo "checkout " + env.BRANCH_NAME
+                echo "checkout branch: " + env.BRANCH_NAME
                 checkout([$class: 'GitSCM', branches: [[name: '*/'+env.BRANCH_NAME]], extensions: [], userRemoteConfigs: [[url: 'https://github.com/jagat2189/app_jagatvarshney.git']]])
             }
         }
         stage('Building Docker Image') {
             steps {
                 script {
-                    echo "Branch name is " + env.BRANCH_NAME
                     dockerImage = docker.build image
                 }
             }
@@ -45,7 +44,7 @@ pipeline {
                 bat "npm test"
             }
         }
-        stage('Push Image') {
+        stage('Push Image To Registry') {
             steps {
                 script {
                     docker.withRegistry( '', registryCredential ) {
