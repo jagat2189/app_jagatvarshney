@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nagp-devops-deployment
+  namespace: nagp-devops-jagatvarshney
+  labels:
+    app: nagp-devops-app
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: nagp-devops-app
+  template:
+    metadata:
+      labels:
+        app: nagp-devops-app
+    spec:
+      containers:
+      - name: nagp-devops-app
+        image: jagatvarshney/nagp-devops:i-jagatvarshney-develop-19
+        ports:
+        - containerPort: 3000
+        env:
+        - name: MONGO_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: nagp-devops-mongo-secret
+              key: mongo-username
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nagp-devops-mongo-secret
+              key: mongo-password
+        - name: MONGODB_SERVER
+          valueFrom:
+            configMapKeyRef:
+              name: nagp-devops-configmap
+              key: mongo-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nagp-devops-service
+  namespace: nagp-devops-jagatvarshney
+spec:
+  type: LoadBalancer
+  selector: 
+    app: nagp-devops-app
+  ports:    
+  - protocol: TCP
+    port: 3200
+    targetPort: 3000
+    nodePort: 30010
+---
