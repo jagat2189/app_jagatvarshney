@@ -63,7 +63,7 @@ pipeline {
         stage('Kubernetes Deployment') {
 		    steps {
                 echo "Initiating Kubernetes deployment"
-		        bat "kubectl apply -f deployment.yaml"
+		        bat "kubectl --kubeconfig=C:\Users\jagatvarshney\.kube\Config apply -f deployment.yaml"
 		    }
 		}
     }
