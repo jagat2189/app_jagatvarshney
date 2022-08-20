@@ -17,6 +17,7 @@ pipeline {
     stages {
         stage('Build Docker Image') {
             steps {
+                echo "Building Docker Image.."
                 script {
                     dockerImage = docker.build image
                 }
@@ -37,6 +38,7 @@ pipeline {
                 branch "master"
             }
             steps {
+                echo "Executing Test Cases.."
                 bat "npm install jest-environment-jsdom"
                 bat "npm install -g jest"
                 bat "npm test"
@@ -44,12 +46,15 @@ pipeline {
         }
         stage('Push Image To DockerHub') {
             steps {
+                echo "Pushing Docker Image to Docker Hub..."
                 script {
                     docker.withRegistry('https://registry.hub.docker.com', registryCredential ) {
                         dockerImage.push("i-${username}-${BRANCH_NAME}-${BUILD_NUMBER}")
                         dockerImage.push("i-${username}-${BRANCH_NAME}-latest")
                     }
                 }
+                echo "Pushed tag i-${username}-${BRANCH_NAME}-${BUILD_NUMBER}"
+                echo "Pushed tag i-${username}-${BRANCH_NAME}-latest"
             }
         }
         stage('Kubernetes Deployment') {
@@ -59,8 +64,14 @@ pipeline {
                     deployment_yaml = deployment_yaml.replaceAll("imagename", "${image}:i-${username}-${BRANCH_NAME}-${BUILD_NUMBER}")
                     writeFile file: "deployment.yaml", text: deployment_yaml
                 }
-                echo "Initiating Kubernetes deployment"
+                echo "Initiating Kubernetes deployment in cluster..."
+
+                bat "kubectl --kubeconfig=C:\\Users\\jagatvarshney\\.kube\\Config apply -f namespace.yaml"
+                bat "kubectl --kubeconfig=C:\\Users\\jagatvarshney\\.kube\\Config apply -f secret.yaml"
+                bat "kubectl --kubeconfig=C:\\Users\\jagatvarshney\\.kube\\Config apply -f configmap.yaml"
 		        bat "kubectl --kubeconfig=C:\\Users\\jagatvarshney\\.kube\\Config apply -f deployment.yaml"
+
+                echo "Deployment Completed..."
 		    }
 		}
     }
