@@ -57,7 +57,7 @@ pipeline {
         stage('Kubernetes Deployment') {
 		    steps {
                 echo "Initiating Kubernetes deployment"
-		        bat "kubectl apply -f deployment.yaml"
+		        bat "kubectl apply -f deployment.yaml --context gke_nagp-devops-360006_us-central1-c_nagarro-cluster"
 		    }
 		}
     }
