@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: nagp-devops-app
-        image: jagatvarshney/nagp-devops:i-jagatvarshney-develop-19
+        image: imagename
         ports:
         - containerPort: 3000
         env:

@@ -10,15 +10,14 @@ pipeline {
         username = 'jagatvarshney'
         registryCredential = 'dockercredential'
     }
+    options {
+        timestamps()
+        timeout(time: 1, unit: "HOURS")
+    }
     stages {
-        stage('Cloning Git') {
+        stage('Build Docker Image') {
             steps {
-                echo "checkout branch: " + env.BRANCH_NAME
-                checkout([$class: 'GitSCM', branches: [[name: '*/'+env.BRANCH_NAME]], extensions: [], userRemoteConfigs: [[url: 'https://github.com/jagat2189/app_jagatvarshney.git']]])
-            }
-        }
-        stage('Building Docker Image') {
-            steps {
+                echo "Building Docker Image.."
                 script {
                     dockerImage = docker.build image
                 }
@@ -34,30 +33,45 @@ pipeline {
                 }
             }
         }
-        stage('Test case execution') {
+        stage('Test Case Execution') {
             when {
                 branch "master"
             }
             steps {
+                echo "Executing Test Cases.."
                 bat "npm install jest-environment-jsdom"
                 bat "npm install -g jest"
                 bat "npm test"
             }
         }
-        stage('Push Image To Registry') {
+        stage('Push Image To DockerHub') {
             steps {
+                echo "Pushing Docker Image to Docker Hub..."
                 script {
-                    docker.withRegistry( '', registryCredential ) {
+                    docker.withRegistry('https://registry.hub.docker.com', registryCredential ) {
                         dockerImage.push("i-${username}-${BRANCH_NAME}-${BUILD_NUMBER}")
                         dockerImage.push("i-${username}-${BRANCH_NAME}-latest")
                     }
                 }
+                echo "Pushed tag i-${username}-${BRANCH_NAME}-${BUILD_NUMBER}"
+                echo "Pushed tag i-${username}-${BRANCH_NAME}-latest"
             }
         }
         stage('Kubernetes Deployment') {
 		    steps {
-                echo "Initiating Kubernetes deployment"
+                script {
+                    def deployment_yaml = readFile file: "deployment.yaml"
+                    deployment_yaml = deployment_yaml.replaceAll("imagename", "${image}:i-${username}-${BRANCH_NAME}-${BUILD_NUMBER}")
+                    writeFile file: "deployment.yaml", text: deployment_yaml
+                }
+                echo "Initiating Kubernetes deployment in cluster..."
+
+                bat "kubectl --kubeconfig=C:\\Users\\jagatvarshney\\.kube\\Config apply -f namespace.yaml"
+                bat "kubectl --kubeconfig=C:\\Users\\jagatvarshney\\.kube\\Config apply -f secret.yaml"
+                bat "kubectl --kubeconfig=C:\\Users\\jagatvarshney\\.kube\\Config apply -f configmap.yaml"
 		        bat "kubectl --kubeconfig=C:\\Users\\jagatvarshney\\.kube\\Config apply -f deployment.yaml"
+
+                echo "Deployment Completed..."
 		    }
 		}
     }
