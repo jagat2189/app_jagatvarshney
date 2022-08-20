@@ -10,14 +10,12 @@ pipeline {
         username = 'jagatvarshney'
         registryCredential = 'dockercredential'
     }
+    options {
+        timestamps()
+        timeout(time: 1, unit: "HOURS")
+    }
     stages {
-        stage('Cloning Git') {
-            steps {
-                echo "checkout branch: " + env.BRANCH_NAME
-                checkout([$class: 'GitSCM', branches: [[name: '*/'+env.BRANCH_NAME]], extensions: [], userRemoteConfigs: [[url: 'https://github.com/jagat2189/app_jagatvarshney.git']]])
-            }
-        }
-        stage('Building Docker Image') {
+        stage('Build Docker Image') {
             steps {
                 script {
                     dockerImage = docker.build image
@@ -34,7 +32,7 @@ pipeline {
                 }
             }
         }
-        stage('Test case execution') {
+        stage('Test Case Execution') {
             when {
                 branch "master"
             }
@@ -44,7 +42,7 @@ pipeline {
                 bat "npm test"
             }
         }
-        stage('Push Image To Registry') {
+        stage('Push Image To DockerHub') {
             steps {
                 script {
                     docker.withRegistry( '', registryCredential ) {
@@ -56,6 +54,11 @@ pipeline {
         }
         stage('Kubernetes Deployment') {
 		    steps {
+                script {
+                    def deployment_yaml = readFile file: "deployment.yaml"
+                    deployment_yaml = deployment_yaml.replaceAll("imagename", "${image}:i-${username}-${BRANCH_NAME}-${BUILD_NUMBER}")
+                    writeFile file: "deployment.yaml", text: deployment_yaml
+                }
                 echo "Initiating Kubernetes deployment"
 		        bat "kubectl --kubeconfig=C:\\Users\\jagatvarshney\\.kube\\Config apply -f deployment.yaml"
 		    }
