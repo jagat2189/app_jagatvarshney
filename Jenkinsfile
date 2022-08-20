@@ -18,6 +18,9 @@ pipeline {
             }
         }
         stage('Building Docker Image') {
+            when {
+                branch "master"
+            }
             steps {
                 script {
                     dockerImage = docker.build image
@@ -60,7 +63,7 @@ pipeline {
         stage('Kubernetes Deployment') {
 		    steps {
                 echo "Initiating Kubernetes deployment"
-		        bat "kubectl apply -f deployment.yaml --context gke_nagp-devops-360006_us-central1-c_nagarro-cluster"
+		        bat "kubectl apply -f deployment.yaml --context nagarro-cluster"
 		    }
 		}
     }
