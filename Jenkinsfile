@@ -63,7 +63,7 @@ pipeline {
         stage('Kubernetes Deployment') {
 		    steps {
                 echo "Initiating Kubernetes deployment"
-		        bat "kubectl apply -f deployment.yaml --context nagarro-cluster"
+		        bat "kubectl apply -f deployment.yaml"
 		    }
 		}
     }
