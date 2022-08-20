@@ -17,11 +17,7 @@ spec:
     spec:
       containers:
       - name: nagp-devops-app
-        image: jagatvarshney/nagp-devops:i-jagatvarshney-master-latest
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
+        image: jagatvarshney/nagp-devops:i-jagatvarshney-develop-latest
         ports:
         - containerPort: 3000
         env:
