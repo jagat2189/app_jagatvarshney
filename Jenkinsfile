@@ -18,9 +18,6 @@ pipeline {
             }
         }
         stage('Building Docker Image') {
-            when {
-                branch "master"
-            }
             steps {
                 script {
                     dockerImage = docker.build image
@@ -29,7 +26,7 @@ pipeline {
         }
         stage('Sonarqube Analysis') {
             when {
-                branch "master"
+                branch "develop"
             }
             steps {
                 withSonarQubeEnv('Test_Sonar') {
@@ -48,9 +45,6 @@ pipeline {
             }
         }
         stage('Push Image To Registry') {
-            when {
-                branch "master"
-            }
             steps {
                 script {
                     docker.withRegistry( '', registryCredential ) {
