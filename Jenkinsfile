@@ -26,7 +26,7 @@ pipeline {
         }
         stage('Sonarqube Analysis') {
             when {
-                branch "develop"
+                branch "master"
             }
             steps {
                 withSonarQubeEnv('Test_Sonar') {
@@ -45,6 +45,9 @@ pipeline {
             }
         }
         stage('Push Image To Registry') {
+            when {
+                branch "master"
+            }
             steps {
                 script {
                     docker.withRegistry( '', registryCredential ) {
